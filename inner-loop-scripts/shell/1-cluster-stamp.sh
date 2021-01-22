@@ -16,11 +16,11 @@ K8S_RBAC_AAD_ADMIN_GROUP_OBJECTID=$9
 K8S_RBAC_AAD_PROFILE_TENANTID=${10}
 AKS_ENDUSER_NAME=${11}
 AKS_ENDUSER_PASSWORD=${12}
+RGNAME_FRONT_DOOR=${13}
 
 # Used for services that support native geo-redundancy (Azure Container Registry)
 # Ideally should be the paired region of $LOCATION
 GEOREDUNDANCY_LOCATION=centralus
-
 APPGW_APP_URL=bicycle.contoso.com
 
 az login
@@ -241,6 +241,12 @@ kubectl wait --namespace a0042 \
 
 echo 'you must see the EXTERNAL-IP 10.244.4.4, please wait till it is ready. It takes a some minutes, then cntr+c'
 kubectl get svc -n traefik --watch  -n a0042 --context ${AKS_CLUSTER_NAME_BU0001A0042_04}-admin
+
+echo ""
+echo "# Deploy Front Door"
+echo ""
+az group create --name ${RGNAME_FRONT_DOOR} --location ${LOCATION}
+az deployment group  create --resource-group ${RGNAME_FRONT_DOOR} --template-file frontdoor-stamp.json  --parameters backendNames="['${APPGW_PUBLIC_IP_BU0001A0042_03}','${APPGW_PUBLIC_IP_BU0001A0042_04}']"
 
 echo ""
 echo "# Creating AAD Groups and users for the created cluster"
